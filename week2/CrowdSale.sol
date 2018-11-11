@@ -36,11 +36,15 @@ contract Crowdsale {
     * @param _wallet Address where collected funds will be forwarded to
     * @param _token Address of the token being sold
     */
-    constructor(uint256 _rate, address _wallet, IERC20 _token) public {
+    constructor(uint _cap, uint256 _rate, address _wallet, IERC20 _token) public {
         // TODO: Your Code Here
+       // require(token.totalSupply()>=cap.div(rate));
+
+        weiRaised=0;
         rate = _rate;
         wallet = _wallet;
         token = _token;
+        cap = _cap;//token.totalSupply().div(rate);
     }
 
     /**
@@ -62,7 +66,7 @@ contract Crowdsale {
 
         // TODO: Your Code Here
         require(!capReached());
-        //???require(msg.value<=(cap - weiRaised));
+        require(cap >= weiRaised.add(msg.value));
         uint256 pay = msg.value;
 
         uint256 tok = pay.div(rate);

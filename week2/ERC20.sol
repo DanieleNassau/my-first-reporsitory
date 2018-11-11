@@ -55,8 +55,9 @@ contract ERC20 is IERC20 {
   */
   function transfer(address to, uint256 value) public returns (bool) {
     // TODO: Your Code Here
+    //check if address is the ERC20 contract??
     require(to != 0);
-    require(value !=0);
+   // require(value !=0);
     require(_balances[msg.sender]>=value);
     //check if contract or person???
     _balances[msg.sender] = _balances[msg.sender].sub(value);
@@ -75,7 +76,7 @@ contract ERC20 is IERC20 {
     // TODO: Your Code Here
     // WHAT CONDITION??? to check
     require(spender!=0);
-    require(value!=0);
+    //require(value!=0);
     _allowed[msg.sender][spender]=_allowed[msg.sender][spender].add(value);
     return true;
   }
@@ -90,7 +91,7 @@ contract ERC20 is IERC20 {
     // TODO: Your Code Here
     require(from!=0);
     require(to!=0);
-     require(value!=0);
+   //  require(value!=0);
     require(_allowed[from][msg.sender]>=value);
     require(_balances[from]>=value);
     _balances[from] =_balances[from].sub(value);
