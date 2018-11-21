@@ -23,8 +23,8 @@ contract CryptoBallers is ERC721 {
     uint ballerFee = 0.10 ether;
 
     /**
-    * @dev Ensures ownership of the specified token ID
-    * @param tokenId uint256 ID of the token to check
+    *  Ensures ownership of the specified token ID
+    *  tokenId uint256 ID of the token to check
     */
     modifier onlyOwnerOf(uint256 _tokenId) {
         // TODO add your code
@@ -34,7 +34,7 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-    * @dev Ensures ownership of contract
+    *  Ensures ownership of contract
     */
     modifier onlyOwner() {
         // TODO add your code
@@ -43,9 +43,9 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-    * @dev Ensures baller has level above specified level
-    * @param level uint level that the baller needs to be above
-    * @ballerId uint ID of the Baller to check
+    *  Ensures baller has level above specified level
+    *  level uint level that the baller needs to be above
+    *  uint ID of the Baller to check
     */
     modifier aboveLevel(uint _level, uint _ballerId) {
         // TODO add your code
@@ -59,7 +59,7 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-    * @dev Allows user to claim first free baller, ensure no address can claim more than one
+    *  Allows user to claim first free baller, ensure no address can claim more than one
     */
     function claimFreeBaller() public {
         // TODO add your code
@@ -71,7 +71,7 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-    * @dev Allows user to buy baller with set attributes
+    *  Allows user to buy baller with set attributes
     */
     function buyBaller() public payable {
         // TODO add your code
@@ -113,13 +113,13 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-    * @dev Play a game with your baller and an opponent baller
+    *  Play a game with your baller and an opponent baller
     * If your baller has more offensive skill than your opponent's defensive skill
     * you win, your level goes up, the opponent loses, and vice versa.
     * If you win and your baller reaches level 5, you are awarded a new baller with a mix of traits
     * from your baller and your opponent's baller.
-    * @param ballerId uint ID of the Baller initiating the game
-    * @param targetId uint ID that the baller needs to be above
+    *  ballerId uint ID of the Baller initiating the game
+    *  targetId uint ID that the baller needs to be above
     */
     function playBall(uint _ballerId, uint _opponentId) onlyOwnerOf(_ballerId) public {
        // TODO add your code
@@ -158,9 +158,8 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-    * @dev Changes the name of your baller if they are above level two
-    * @param ballerId uint ID of the Baller who's name you want to change
-    * @param newName string new name you want to give to your Baller
+    *  ballerId uint ID of the Baller who's name you want to change
+    *  newName string new name you want to give to your Baller
     */
     function changeName(uint _ballerId, string _newName) external aboveLevel(2, _ballerId) onlyOwnerOf(_ballerId) {
         // TODO add your code
@@ -169,11 +168,11 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-   * @dev Creates a baller based on the params given, adds them to the Baller array and mints a token
-   * @param name string name of the Baller
-   * @param level uint level of the Baller
-   * @param offenseSkill offensive skill of the Baller
-   * @param defenseSkill defensive skill of the Baller
+   *  Creates a baller based on the params given, adds them to the Baller array and mints a token
+   *  name string name of the Baller
+   *  level uint level of the Baller
+   *  offenseSkill offensive skill of the Baller
+   *  defenseSkill defensive skill of the Baller
    */
     function _createBaller(string _name, uint _level, uint _offenseSkill, uint _defenseSkill) internal {
         // TODO add your code
@@ -190,10 +189,10 @@ contract CryptoBallers is ERC721 {
     }
 
     /**
-    * @dev Helper function for a new baller which averages the attributes of the level, attack, defense of the ballers
-    * @param baller1 Baller first baller to average
-    * @param baller2 Baller second baller to average
-    * @return tuple of level, attack and defense
+    *  Helper function for a new baller which averages the attributes of the level, attack, defense of the ballers
+    *  baller1 Baller first baller to average
+    *  baller2 Baller second baller to average
+    *  tuple of level, attack and defense
     */
     function _breedBallers(Baller _baller1, Baller _baller2) internal pure returns (uint, uint, uint) {
         uint level = _baller1.level.add(_baller2.level).div(2);
