@@ -28,8 +28,8 @@ contract CryptoBallers is ERC721 {
     */
     modifier onlyOwnerOf(uint256 _tokenId) {
         // TODO add your code
-       
-       require(msg.sender==ownerOf(_tokenId));
+       require(_exists(_tokenId));
+       require(_isApprovedOrOwner(msg.sender,_tokenId));
        _;
     }
 
@@ -49,7 +49,8 @@ contract CryptoBallers is ERC721 {
     */
     modifier aboveLevel(uint _level, uint _ballerId) {
         // TODO add your code
-        require(ballers[_ballerId].level >=_level);
+        require(_exists(_ballerId));
+        require(ballers[_ballerId].level >_level);
         _;
     }
 
@@ -107,7 +108,7 @@ contract CryptoBallers is ERC721 {
             r_level=1;
         }
         
-        msg.sender.transfer(paid*ballerFee);
+        msg.sender.transfer(paid.mul(ballerFee));
         _createBaller("NewPaidBaller",r_level, r_Offensive, r_defensicve);
     }
 
@@ -122,22 +123,36 @@ contract CryptoBallers is ERC721 {
     */
     function playBall(uint _ballerId, uint _opponentId) onlyOwnerOf(_ballerId) public {
        // TODO add your code
-       uint winner=0;
+        //uint  winner=0;
+        require(_exists(_opponentId));
+        uint r_level;
+        uint r_Offensive;
+        uint r_defensicve;
        if(ballers[_ballerId].offenseSkill>ballers[_opponentId].defenseSkill){
-           winner =_ballerId;
-       }
-       else if(ballers[_opponentId].offenseSkill>ballers[_ballerId].defenseSkill){
-           winner =_opponentId;
-       }
-       ballers[winner].level= ballers[winner].level.add(1);
-        if(ballers[winner].level==5){
-            uint r_level;
-            uint r_Offensive;
-            uint r_defensicve;
+           ballers[_ballerId].level= ballers[_ballerId].level.add(1);
+           ballers[_ballerId].winCount = ballers[_ballerId].winCount.add(1);
+           ballers[_opponentId].lossCount = ballers[_opponentId].lossCount.add(1);
+        if(ballers[_ballerId].level==5){
+            
             (r_level, r_Offensive, r_defensicve) = _breedBallers(ballers[_ballerId],ballers[_opponentId]);
             //How do I assign to the opponent?? transfer??
             _createBaller("NewWonBaller",r_level, r_Offensive, r_defensicve);//.call(ownerOf(winner));
         }
+           
+       }
+       if(ballers[_opponentId].offenseSkill>ballers[_ballerId].defenseSkill){
+           ballers[_opponentId].level= ballers[_opponentId].level.add(1);
+           ballers[_opponentId].winCount = ballers[_opponentId].winCount.add(1);
+           ballers[_ballerId].lossCount = ballers[_ballerId].lossCount.add(1);
+        if(ballers[_opponentId].level==5){
+            
+            (r_level, r_Offensive, r_defensicve) = _breedBallers(ballers[_ballerId],ballers[_opponentId]);
+            //How do I assign to the opponent?? transfer??
+            _createBaller("NewWonBaller",r_level, r_Offensive, r_defensicve);//.call(ownerOf(winner));
+            safeTransferFrom(msg.sender,ownerOf(_opponentId),ballers.length-1);
+        }
+       }
+       
            
        
     }
@@ -162,11 +177,14 @@ contract CryptoBallers is ERC721 {
    */
     function _createBaller(string _name, uint _level, uint _offenseSkill, uint _defenseSkill) internal {
         // TODO add your code
-        uint newId = ballers.length;
-        ballers[newId].name=_name;
-        ballers[newId].level=_level;
-        ballers[newId].offenseSkill=_offenseSkill;
-        ballers[newId].defenseSkill=_defenseSkill;
+       // uint newId = ballers.length;
+      //  ballers[newId].name=_name;
+      //  ballers[newId].level=_level;
+//ballers[newId].offenseSkill=_offenseSkill;
+     //   ballers[newId].defenseSkill=_defenseSkill;
+        
+        ballers.push(Baller(_name, _level, _offenseSkill, _defenseSkill, 0, 0));
+        uint newId = ballers.length - 1;
         _mint(msg.sender,newId);
         
     }
