@@ -2,7 +2,20 @@ pragma solidity ^0.4.24;
 
 import "./IERC20.sol";
 import "./SafeMath.sol";
+/*
+for the CrowdSale contract, 
+OK you need to require a non-null token, a non-zero rate, a non-null wallet,  
+OK it should accept payments within cap once deployed, 
+OK it should fail with zero cap, and should reject payments that exceed the cap. 
 
+Also the contract doesn’t revert on zero-valued payments, 
+not does it log high-level/low-level purchases, 
+or assign tokens to the sender/forward funds to wallet on high-level purchases, 
+or assign tokens to beneficary on a low level purchase, or forward funds to wallet. 
+You also need to make sure the crowdsale does not reach cap if sent under the cap when ending, 
+and should reach cap when ending if the cap is sent.
+
+*/
 contract Crowdsale {
     using SafeMath for uint256;
 
@@ -36,9 +49,12 @@ contract Crowdsale {
     * @param _wallet Address where collected funds will be forwarded to
     * @param _token Address of the token being sold
     */
-    constructor(uint _cap, uint256 _rate, address _wallet, IERC20 _token) public {
+    constructor(uint256 _rate, address _wallet, IERC20 _token, uint _cap) public {
         // TODO: Your Code Here
-       // require(token.totalSupply()>=cap.div(rate));
+        require(_cap>0);
+        require(_rate>0);
+        require(_wallet!=0);
+       // require();
 
         weiRaised=0;
         rate = _rate;
@@ -65,6 +81,8 @@ contract Crowdsale {
         //  - Forward funds to wallet
 
         // TODO: Your Code Here
+        require(msg.value>=rate);
+        require(msg.value<=cap);
         require(!capReached());
         require(cap >= weiRaised.add(msg.value));
         uint256 pay = msg.value;
@@ -72,11 +90,12 @@ contract Crowdsale {
         uint256 tok = pay.div(rate);
         uint256 rest = pay.mod(rate);
          pay = pay.sub(rest);
-
+         
+        weiRaised =weiRaised.add(pay);
         wallet.transfer(pay);
         token.transfer(beneficiary,tok);
-
-        weiRaised =weiRaised.add(pay);
+        msg.sender.transfer(rest);
+        
         emit TokensPurchased(msg.sender,beneficiary,pay,tok);
 
     }
