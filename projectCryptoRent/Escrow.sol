@@ -10,8 +10,20 @@ contract Escrow {
 //what about this???
 
 //get the renter and the landlord from the apartment ID
-    modifier renterOnly(uint _apartmentId) { require(msg.sender == renter || msg.sender == arbiter); _; }
-    modifier landlordOnly(uint _apartmentId) { require(msg.sender == landlord || msg.sender == arbiter); _; }
+    modifier renterOnly(uint _apartmentId) { 
+        //read landlord getRenter(_apartmentId)
+        address renter;
+        require(msg.sender == renter || msg.sender == arbiter); 
+        _; 
+        
+    }
+    modifier landlordOnly(uint _apartmentId) { 
+        //read landlord getLandlord(_apartmentId)
+        address landlord;
+        require(msg.sender == landlord || msg.sender == arbiter); 
+        _; 
+        
+    }
     modifier inState(uint _apartmentId,State expectedState) { require(_state[_apartmentId] == expectedState); _; }
 
    // address public renter;
@@ -23,10 +35,8 @@ contract Escrow {
     
     
     //What should be the constructor??
-    constructor(address _renter, address _landlord, address _arbiter) public {
-        renter = _renter;
-        landlord = _landlord;
-        arbiter = _arbiter;
+    constructor() public {
+        arbiter = msg.sender;
     }
     
     
