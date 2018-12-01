@@ -2,7 +2,17 @@ pragma solidity ^0.4.24;
 
 import "./IERC20.sol";
 import "./SafeMath.sol";
+/*
+For the ERC20 contract, 
+the transfer and transfer from functions aren’t emitting a transfer event 
+when the sender has enough balance and when the recipient is the zero address. 
 
+The contract also needs to emit an approval event if the spender has enough balance, 
+and when the spender had an approved amount it needs approve the requested amount 
+and replaces the previous one. 
+
+You also need to emit an approval event when the sender does not have enough balance. 
+*/
 /**
  * @title Standard ERC20 token
  * @dev Implementation of the basic standard token.
@@ -62,6 +72,7 @@ contract ERC20 is IERC20 {
     //check if contract or person???
     _balances[msg.sender] = _balances[msg.sender].sub(value);
     _balances[to] = _balances[to].add(value);
+    emit Transfer(msg.sender, to,value);
     return true;
   }
 
@@ -77,7 +88,8 @@ contract ERC20 is IERC20 {
     // WHAT CONDITION??? to check
     require(spender!=0);
     //require(value!=0);
-    _allowed[msg.sender][spender]=_allowed[msg.sender][spender].add(value);
+    _allowed[msg.sender][spender]=value;
+    emit Approval(msg.sender,spender,value);
     return true;
   }
 
@@ -97,6 +109,7 @@ contract ERC20 is IERC20 {
     _balances[from] =_balances[from].sub(value);
     _allowed[from][msg.sender] =_allowed[from][msg.sender].sub(value);
     _balances[to] = _balances[to].add(value);
+    emit Transfer(from, to,value);
     return true;
 
   }
