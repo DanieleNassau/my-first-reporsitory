@@ -3,6 +3,7 @@ pragma solidity ^0.4.25;
 import "./SafeMath.sol";
 
 contract Escrow {
+    using SafeMath for uint256;
 
     enum State { AWAITING_PAYMENT, AWAITING_APPROVAL, COMPLETE, REFUNDED}
     State public currentState;
@@ -12,26 +13,32 @@ contract Escrow {
 //get the renter and the landlord from the apartment ID
     modifier renterOnly(uint _apartmentId) { 
         //read landlord getRenter(_apartmentId)
-        address renter;
+        address renter = getTenent(_apartmentId);
         require(msg.sender == renter || msg.sender == arbiter); 
         _; 
         
     }
     modifier landlordOnly(uint _apartmentId) { 
         //read landlord getLandlord(_apartmentId)
-        address landlord;
+        address landlord= getLandlord(_apartmentId);
         require(msg.sender == landlord || msg.sender == arbiter); 
         _; 
         
     }
-    modifier inState(uint _apartmentId,State expectedState) { require(_state[_apartmentId] == expectedState); _; }
+    modifier inState(uint _apartmentId,State expectedState) { require(_lease[_apartmentId].status == expectedState); _; }
 
    // address public renter;
     //address public landlord;
     address public arbiter;
     
-    mapping (uint => uint256) internal _balances;//map each renter with the amount paid
-    mapping (uint => State) internal _state;//map each renter with the status of the payment
+     struct Lease {
+        uint balance;
+        uint nrPayment;
+        State status;
+    }
+    
+    mapping (uint => Lease) internal _lease;//map each renter with the amount paid
+   // mapping (uint => State) internal _state;//map each renter with the status of the payment
     
     
     //What should be the constructor??
@@ -42,36 +49,42 @@ contract Escrow {
     
     function sendPayment(uint _apartmentId) inState(_apartmentId,State.AWAITING_PAYMENT) public payable {
         //get apartment id 
-        uint monthlyRent;//from the apartment 
+        uint monthlyRent=getMonthlyAmt(_apartmentId);//from the apartment 
         require(msg.value>=monthlyRent);
-        _balances[_apartmentId]= _balances[_apartmentId].add(msg.value);
+        _lease[_apartmentId].balance = _lease[_apartmentId].balance.add(msg.value);
+        _lease[_apartmentId].nrPayment = _lease[_apartmentId].nrPayment.add(1);
         
-        
-        _state[_apartmentId] = State.AWAITING_APPROVAL;
+        _lease[_apartmentId].status = State.AWAITING_APPROVAL;
     }
 
-    function confirmApproval(uint _apartmentId) renterOnly inState(_apartmentId,State.AWAITING_APPROVAL) public {
+    function confirmApproval(uint _apartmentId) renterOnly(_apartmentId) inState(_apartmentId,State.AWAITING_APPROVAL) public {
         //get landlord address from apartment and end of lease
          //read renter address get from apartment??
        //maybe check if above the balance is above Monthlyrent
-        bool LastMonth;
-        uint payment=_balances[_apartmentId];
-        _balances[_apartmentId]=0;
+      address landlord = getLandlord(_apartmentId);
+      uint totPayments = getNumPayments(_apartmentId);
+      
+     //   bool LastMonth;// = isLastMonth(_apartmentId);
+        
+        uint payment=_lease[_apartmentId].balance;
+        _lease[_apartmentId].balance=0;
         landlord.transfer(payment);
-        if(LastMonth){
-            _state[_apartmentId] = State.AWAITING_PAYMENT;
+        if(totPayments <_lease[_apartmentId].nrPayment){
+            _lease[_apartmentId].status = State.AWAITING_PAYMENT;
         }
         else{
-            _state[_apartmentId] = State.AWAITING_PAYMENT;
+            _lease[_apartmentId].status = State.COMPLETE;
         }
         
     }
 
-    function refundRenter(uint _apartmentId) landlordOnly inState(_apartmentId,State.AWAITING_APPROVAL) public {
+    function refundRenter(uint _apartmentId) landlordOnly(_apartmentId) inState(_apartmentId,State.AWAITING_APPROVAL) public {
         //read renter address get from apartment
-        uint payment=_balances[_apartmentId];
-        _balances[_apartmentId]=0;
+        address renter = getTenent(_apartmentId);
+        uint payment=_lease[_apartmentId].balance;
+        _lease[_apartmentId].balance=0;
+        _lease[_apartmentId].nrPayment = _lease[_apartmentId].nrPayment.sub(1);
         renter.transfer(payment);
-        _state[_apartmentId] = State.REFUNDED;
+        _lease[_apartmentId].status = State.REFUNDED;
     }
 }
